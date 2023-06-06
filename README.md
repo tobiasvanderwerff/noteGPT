@@ -1,134 +1,117 @@
-# privateGPT
-Ask questions to your documents without an internet connection, using the power of LLMs. 100% private, no data leaves your execution environment at any point. You can ingest documents and ask questions without an internet connection!
+## Problem statement
 
-Built with [LangChain](https://github.com/hwchase17/langchain), [GPT4All](https://github.com/nomic-ai/gpt4all), [LlamaCpp](https://github.com/ggerganov/llama.cpp), [Chroma](https://www.trychroma.com/) and [SentenceTransformers](https://www.sbert.net/).
+I often write time-stamped notes for various things I want to document. A typical note
+would look as follows:
 
-<img width="902" alt="demo" src="https://user-images.githubusercontent.com/721666/236942256-985801c9-25b9-48ef-80be-3acbb4575164.png">
+```
+# dd-mm-yyyy
 
-# Environment Setup
-In order to set your environment up to run the code here, first install all requirements:
+## Meeting with John
 
-```shell
-pip3 install -r requirements.txt
+I talked to John today and he told me about an interesting idea he had. It goes as
+follows: ...
 ```
 
-Then, download the LLM model and place it in a directory of your choice:
-- LLM: default to [ggml-gpt4all-j-v1.3-groovy.bin](https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin). If you prefer a different GPT4All-J compatible model, just download it and reference it in your `.env` file.
+As the size of my notes grows, I end up not coming back to these notes, because it's
+hard to know where to look for specific ideas. So in the end this information goes to
+waste. Instead, I would like to use an LLM assistant to point me to relevant notes when
+I ask about a specific subject. For example: 
 
-Rename `example.env` to `.env` and edit the variables appropriately.
 ```
-MODEL_TYPE: supports LlamaCpp or GPT4All
-PERSIST_DIRECTORY: is the folder you want your vectorstore in
-MODEL_PATH: Path to your GPT4All or LlamaCpp supported LLM
-MODEL_N_CTX: Maximum token limit for the LLM model
-EMBEDDINGS_MODEL_NAME: SentenceTransformers embeddings model name (see https://www.sbert.net/docs/pretrained_models.html)
-TARGET_SOURCE_CHUNKS: The amount of chunks (sources) that will be used to answer a question
-```
+User: Tell me about stereo image matching ideas
 
-Note: because of the way `langchain` loads the `SentenceTransformers` embeddings, the first time you run the script it will require internet connection to download the embeddings model itself.
+GPT: Here are some relevant search results.
 
-## Test dataset
-This repo uses a [state of the union transcript](https://github.com/imartinez/privateGPT/blob/main/source_documents/state_of_the_union.txt) as an example.
+01-01-2022 
+File: /home/user/notes/random/notes.md
+======
+In this note, you mention that a sliding window might be an idea to find pixel
+correspondences.
 
-## Instructions for ingesting your own dataset
 
-Put any and all your files into the `source_documents` directory
-
-The supported extensions are:
-
-   - `.csv`: CSV,
-   - `.docx`: Word Document,
-   - `.doc`: Word Document,
-   - `.enex`: EverNote,
-   - `.eml`: Email,
-   - `.epub`: EPub,
-   - `.html`: HTML File,
-   - `.md`: Markdown,
-   - `.msg`: Outlook Message,
-   - `.odt`: Open Document Text,
-   - `.pdf`: Portable Document Format (PDF),
-   - `.pptx` : PowerPoint Document,
-   - `.ppt` : PowerPoint Document,
-   - `.txt`: Text file (UTF-8),
-
-Run the following command to ingest all the data.
-
-```shell
-python ingest.py
+09-05-2022 
+File: /home/user/notes/other/notes.md
+======
+It is mentioned that sliding window is not good enough, and that a more sophisticated
+method is needed. Using neural networks for depth estimation might be something to
+consider.
 ```
 
-Output should look like this:
+## Requirements
 
-```shell
-Creating new vectorstore
-Loading documents from source_documents
-Loading new documents: 100%|██████████████████████| 1/1 [00:01<00:00,  1.73s/it]
-Loaded 1 new documents from source_documents
-Split into 90 chunks of text (max. 500 tokens each)
-Creating embeddings. May take some minutes...
-Using embedded DuckDB with persistence: data will be stored in: db
-Ingestion complete! You can now run privateGPT.py to query your documents
-```
+### Model requirements
+There are two models required: an **LLM**, and an **embedding model** (for text search).
+Overall, no internet connection should be required to run the entire program.
 
-It will create a `db` folder containing the local vectorstore. Will take 20-30 seconds per document, depending on the size of the document.
-You can ingest as many documents as you want, and all will be accumulated in the local embeddings database.
-If you want to start from an empty database, delete the `db` folder.
+#### LLM
+- The LLM model should run locally, due to privacy concerns. Using the OpenAI API is not
+  ideal if your notes may contain sensitive information (who knows what they do with
+  your data!).
+- The LLM should run on at most 6GB of GPU memory (which is what I'm working with), or
+  run on CPU.
 
-Note: during the ingest process no data leaves your local environment. You could ingest without an internet connection, except for the first time you run the ingest script, when the embeddings model is downloaded.
+#### Embedding model
+- Should run locally
 
-## Ask questions to your documents, locally!
-In order to ask a question, run a command like:
+### Response requirements
 
-```shell
-python privateGPT.py
-```
+The requirements for the response are enforced by using prompt engineering. Basically,
+try to feed the LLM an explanation of its task, in a way which maximally optimizes for
+task performance. The response requirements are:
 
-And wait for the script to require your input.
-
-```plaintext
-> Enter a query:
-```
-
-Hit enter. You'll need to wait 20-30 seconds (depending on your machine) while the LLM model consumes the prompt and prepares the answer. Once done, it will print the answer and the 4 sources it used as context from your documents; you can then ask another question without re-running the script, just wait for the prompt again.
-
-Note: you could turn off your internet connection, and the script inference would still work. No data gets out of your local environment.
-
-Type `exit` to finish the script.
+- The LLM should mention a specific note, along with its date and filename.
+- The LLM should summarize briefly why the note is relevant for the given query.
 
 
-### CLI
-The script also supports optional command-line arguments to modify its behavior. You can see a full list of these arguments by running the command ```python privateGPT.py --help``` in your terminal.
+## Models
+
+The only way in which I've been able to use sufficiently large models (7B+), is by using
+8-bit or 4-bit quantization, using [LLama.cpp](https://github.com/ggerganov/llama.cpp).
+Models I've tried:
+
+### LLMs
+- **Llama-7b**: not very usable because it's not instruction-tuned, i.e., it's a base
+  model
+- **Vicuna-7b**: producing some nice results so far
+- **Falcon-7b-instruct**: TBD
+- **MPT-7b**: TBD
+
+### Embedding models
+
+## Workflow
+
+There's a lot of nice tools out there for working with LLMs (e.g. LangChain).
+The main thing that is needed is a suitable LLM that is good enough as an
+assistant, which, roughly speaking, means it should be able to accurately answer
+questions about unstructured pieces of text. My workflow so far:
+
+1. Download an interesting model off of Huggingface (consider using [this script](https://github.com/oobabooga/text-generation-webui/blob/main/download-model.py) to download it)
+1. Use `llama.cpp` to quantize it to 4-bit representation (see [the repo](https://github.com/ggerganov/llama.cpp)) for instructions.
+1. Plug the model into [text generation webui](https://github.com/oobabooga/text-generation-webui) for some quick experimentation before we introduce more complexity, e.g. using embeddings for text search
+1. ...
+
+## Data generation
+
+To generate some sample data to try out, I used GPT4 to generate a bunch of notes (Bing
+Chat in creative mode). The prompt I used is in `gpt4_prompt.txt`.
 
 
-# How does it work?
-Selecting the right local models and the power of `LangChain` you can run the entire pipeline locally, without any data leaving your environment, and with reasonable performance.
+## Inspiration for this project
+- https://github.com/imartinez/privateGPT
+- https://github.com/PromtEngineer/localGPT
+  - basically a fork of https://github.com/imartinez/privateGPT
+  - uses Vicuna-7B
+  - without quanization, Vicuna-7b is unusable because it uses way too much memory (not
+    even GPU memory, but plain old RAM). With 32 GB of RAM, the model cannot even be
+    loaded properly 
 
-- `ingest.py` uses `LangChain` tools to parse the document and create embeddings locally using `HuggingFaceEmbeddings` (`SentenceTransformers`). It then stores the result in a local vector database using `Chroma` vector store.
-- `privateGPT.py` uses a local LLM based on `GPT4All-J` or `LlamaCpp` to understand questions and create answers. The context for the answers is extracted from the local vector store using a similarity search to locate the right piece of context from the docs.
-- `GPT4All-J` wrapper was introduced in LangChain 0.0.162.
 
-# System Requirements
+## Ideas
+- give some context to the LLM. E.g. when I say "YOLO", I want it to know it has to do
+  with object detection.
+- save query results in some way to make the model smarter over time 
 
-## Python Version
-To use this software, you must have Python 3.10 or later installed. Earlier versions of Python will not compile.
 
-## C++ Compiler
-If you encounter an error while building a wheel during the `pip install` process, you may need to install a C++ compiler on your computer.
-
-### For Windows 10/11
-To install a C++ compiler on Windows 10/11, follow these steps:
-
-1. Install Visual Studio 2022.
-2. Make sure the following components are selected:
-   * Universal Windows Platform development
-   * C++ CMake tools for Windows
-3. Download the MinGW installer from the [MinGW website](https://sourceforge.net/projects/mingw/).
-4. Run the installer and select the `gcc` component.
-
-## Mac Running Intel
-When running a Mac with Intel hardware (not M1), you may run into _clang: error: the clang compiler does not support '-march=native'_ during pip install.
-
-If so set your archflags during pip install. eg: _ARCHFLAGS="-arch x86_64" pip3 install -r requirements.txt_
-
-# Disclaimer
-This is a test project to validate the feasibility of a fully private solution for question answering using LLMs and Vector embeddings. It is not production ready, and it is not meant to be used in production. The models selection is not optimized for performance, but for privacy; but it is possible to use different models and vectorstores to improve performance.
+## Resources
+- For prompt inspiration, the "Building Systems with the ChatGPT API" course:
+  https://learn.deeplearning.ai/chatgpt-building-system/
