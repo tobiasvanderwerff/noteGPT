@@ -1,3 +1,7 @@
+# NoteGPT
+
+WIP
+
 ## Problem statement
 
 I often write time-stamped notes for various things I want to document. A typical note
