@@ -1,0 +1,101 @@
+# 23-05-2023
+## Meeting with Alice about object detection
+- Alice showed me her results on the COCO dataset using Faster R-CNN with ResNet-50 backbone
+- She achieved a mAP of 0.37, which is close to the state-of-the-art reported in the paper
+- She explained how Faster R-CNN works: it has two stages, a region proposal network (RPN) and a region-based convolutional network (R-CNN)
+- The RPN generates candidate bounding boxes and scores them based on objectness
+- The R-CNN takes the proposals and extracts features using a RoI pooling layer, then classifies them and refines their coordinates
+- She also mentioned some challenges and limitations of Faster R-CNN, such as the need for anchor boxes, the high computational cost, and the difficulty of handling small objects
+
+# 12-04-2023
+## Experimenting with vision transformers
+- I decided to try out vision transformers (ViT) for semantic segmentation
+- ViT is a new approach that applies the transformer architecture to images
+- It divides the image into patches and treats them as tokens for the transformer encoder
+- It also adds a special token for classification and positional embeddings for each patch
+- I followed this tutorial: https://keras.io/examples/vision/image_classification_with_vision_transformer/
+- I used the pre-trained ViT model from TensorFlow Hub: https://tfhub.dev/tensorflow/vit_base_patch16_224/2
+- I fine-tuned it on the Cityscapes dataset using a pixel-wise cross entropy loss
+- I got a mean IoU of 0.52, which is not bad but not impressive either
+- I think ViT may need more data and more training time to achieve good results
+
+# 07-06-2023
+## Random idea: depth estimation from stereo images using YOLO
+- I had a crazy idea today: what if we could use YOLO to estimate depth from stereo images?
+- YOLO is a fast and accurate object detector that predicts bounding boxes and class probabilities in one shot
+- It also outputs an objectness score for each bounding box, which measures how confident it is that there is an object inside
+- My idea is to use this objectness score as a proxy for depth: the higher the score, the closer the object is to the camera
+- To do this, we would need to run YOLO on both left and right images of a stereo pair, and then compare the objectness scores of the corresponding bounding boxes
+- If the score is higher in the left image, then the object is closer to the left camera, and vice versa
+- We could then use triangulation to compute the depth of each object based on its disparity (the difference in horizontal position between the left and right bounding boxes)
+- This would be a simple and fast way to estimate depth without using any explicit stereo matching algorithm
+
+# 15-05-2023
+## AWS workshop on computer vision
+- I attended a workshop on AWS services for computer vision
+- It was hosted by an AWS expert who showed us how to use various tools and APIs
+- Some of the services we learned about were:
+  - Amazon Rekognition: a service that provides face detection, face recognition, object detection, text detection, and scene understanding
+  - Amazon SageMaker: a service that allows us to build, train, and deploy machine learning models in the cloud
+  - Amazon Augmented AI: a service that enables human-in-the-loop workflows for machine learning tasks that require human judgment
+  - Amazon S3: a service that provides scalable and secure storage for our data and models
+- I found the workshop very informative and useful. I learned how to use AWS to simplify and accelerate our computer vision projects.
+
+# 03-06-2023
+## Discussion with Bob about instance segmentation
+- Bob asked me to explain the difference between semantic segmentation and instance segmentation
+- I told him that semantic segmentation is the task of assigning a class label to each pixel in an image, while instance segmentation is the task of assigning a class label and an instance id to each pixel
+- For example, in semantic segmentation, we would label all the pixels that belong to cars as "car", while in instance segmentation, we would label each car with a different id, such as "car1", "car2", etc.
+- I also showed him some examples of instance segmentation models, such as Mask R-CNN and DETR
+- Mask R-CNN is an extension of Faster R-CNN that adds a mask branch to predict binary masks for each object
+- DETR is a novel model that uses a transformer encoder-decoder architecture to directly output bounding boxes and masks without using anchor boxes or region proposals
+- Bob seemed interested and curious about these models. He asked me if I could show him how to use them in our project.
+
+# 10-06-2023
+## Experimenting with stereo image matching
+- I decided to try out some stereo image matching algorithms for depth estimation
+- Stereo image matching is the process of finding correspondences between pixels in two images taken from different viewpoints
+- The correspondences can then be used to compute the disparity map, which is inversely proportional to the depth map
+- I followed this tutorial: https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_calib3d/py_depthmap/py_depthmap.html
+- I used OpenCV to perform stereo calibration, rectification, and matching
+- I tried two different matching methods: block matching (BM) and semi-global block matching (SGBM)
+- BM is a simple and fast method that compares fixed-size blocks of pixels between the images and finds the best match based on a similarity measure
+- SGBM is a more advanced and accurate method that incorporates global smoothness constraints into the matching cost function using dynamic programming
+- I compared the results of both methods on some stereo pairs from the Middlebury dataset: https://vision.middlebury.edu/stereo/data/
+- I found that SGBM produced better results than BM, especially on occluded and textured regions.
+
+# 17-06-2023
+## Talk with Carol about depth estimation
+- Carol showed me her work on depth estimation from a single image
+- She used a convolutional neural network (CNN) to predict the depth map from the RGB image
+- She trained her model on the NYU Depth V2 dataset: https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html
+- She used a loss function that combines L1 norm, gradient difference, and scale-invariant error
+- She achieved a relative error of 0.14 and a RMSE of 0.56 on the test set
+- She explained how her model works: it has an encoder-decoder structure with skip connections
+- The encoder extracts features from the image using a ResNet-50 backbone
+- The decoder upsamples the features and produces the depth map using bilinear interpolation and convolution layers
+- The skip connections allow the decoder to fuse features from different levels of the encoder
+- She also mentioned some challenges and limitations of her model, such as the need for large and diverse datasets, the difficulty of handling dynamic scenes and occlusions, and the lack of ground truth depth for evaluation
+
+# 21-06-2023
+## Random idea: semantic segmentation using YOLO
+- I had another crazy idea today: what if we could use YOLO to perform semantic segmentation?
+- YOLO is a fast and accurate object detector that predicts bounding boxes and class probabilities in one shot
+- It also outputs a feature map that contains rich information about the objects in the image
+- My idea is to use this feature map as an input for a segmentation head that predicts pixel-wise class labels
+- To do this, we would need to modify YOLO to output a larger feature map with higher resolution
+- We would also need to add a segmentation head that consists of upsampling and convolution layers
+- We could train the whole model end-to-end using a combination of detection and segmentation losses
+- This would be a simple and fast way to perform semantic segmentation without using any explicit encoder-decoder architecture
+
+# 24-06-2023
+## Meeting with Dan about neural network architectures
+- Dan asked me to explain the difference between ResNet and DenseNet for CNNs
+- I told him that ResNet and DenseNet are two popular architectures that use skip connections to improve the performance and efficiency of CNNs
+- Skip connections are connections that bypass one or more layers and allow information to flow directly from earlier layers to later layers
+- ResNet uses skip connections to add the output of previous layers to the input of current layers, forming residual blocks
+- DenseNet uses skip connections to concatenate the output of previous layers to the input of current layers, forming dense blocks
+- I also showed him some examples of ResNet and DenseNet models, such as ResNet-50 and DenseNet-121
+- ResNet-50 has 50 layers and 25.6 million parameters. It uses bottleneck blocks that reduce the number of channels before applying convolutions
+- DenseNet-121 has 121 layers and 8 million parameters. It uses growth rate to control the number of channels added by each layer
+- Dan seemed interested and impressed by these architectures. He asked me if I could show him how to use them in our project. However, it was also slower and more memory-intensive.

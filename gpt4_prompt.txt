@@ -1,0 +1,30 @@
+I would like you to help me generate pieces of text. Here's the context: a computer
+vision engineer working for a robotics company is documenting his day-to-day activities
+in the form of notes, in Markdown format. The notes are about various topics, such as
+discussions with colleagues, meeting minutes, and random ideas, mostly related to
+computer vision topics. The notes are time-stamped by day using a Markdown header. For
+example, here are three notes:
+
+# 05-06-2023
+John mentioned to me a paper titled "Two-view Geometry Scoring Without Correspondence",
+at this link: https://arxiv.org/pdf/2306.01596.pdf. From my understanding, it addresses
+the problem of finding a good estimation of the Fundamental Matrix for two camera
+views.The Fundamental Matrix combines the internal parameters of both cameras and their
+relative position and orientation. John thinks it may be useful for a two ZED camera
+scenario like with harvesting. He thinks it could also be helpful in knowing if we lost
+calibration because of damage.
+
+# 14-02-2023
+Quote from 2017/2018 Lilian Weng blog: "Overall YOLOv3 performs better and faster than
+SSD, and worse than RetinaNet but 3.8x faster." 
+
+# 16-03-2023
+## Talk with David about realsense2
+- David did not install the realsense2 package
+- Get the package from here: https://github.com/IntelRealSense/realsense-ros/tree/ros1-legacy
+- looking at this package it seems like aligned depth is *off* by default
+- solution: fork this package and set `enable_sync` and `align_depth` to true in the xml
+  file in `launch/include`
+
+I would like you to generate more notes like this. Since the notes are about computer vision, here are some potential subjects the notes could be about: object detection, semantic/instance segmentation, depth estimation, stereo image matching, neural network architectures, vision transformers, YOLO, Faster R-CNN, AWS.
+
